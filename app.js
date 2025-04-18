@@ -33,6 +33,15 @@ const app = initializeApp(firebaseConfig);
 const auth = getAuth();
 const db = getFirestore(app);
 
+// === Redirect Unauthenticated Users to Login ===
+if (window.location.pathname.includes("index.html")) {
+  onAuthStateChanged(auth, (user) => {
+    if (!user) {
+      window.location.href = "login-extended.html";
+    }
+  });
+}
+
 // === LOGIN EXTENDED ===
 const loginForm = document.getElementById('login-form');
 if (loginForm) {
@@ -63,7 +72,7 @@ if (matchBtn) {
     const slices = document.getElementById('slice-count').value;
     const preference = document.getElementById('match-pref').value;
     const user = auth.currentUser;
-    if (!user) return;
+    if (!user) return alert("Please log in first");
 
     await setDoc(doc(db, 'match_requests', user.uid), {
       userId: user.uid,
@@ -101,7 +110,7 @@ if (waitCancel) {
 const respondBtn = document.getElementById('respond-btn');
 if (respondBtn) {
   respondBtn.addEventListener('click', async () => {
-    const method = document.querySelector('input[name=\"delivery-method\"]:checked').value;
+    const method = document.querySelector('input[name="delivery-method"]:checked').value;
     const matchId = new URLSearchParams(window.location.search).get('matchId');
     const responder = auth.currentUser;
     if (!responder || !matchId) return;
@@ -132,7 +141,7 @@ if (payBtn) {
     const userPrice = totalPrice * (slices / 8);
 
     await setDoc(doc(db, 'wallets', user.uid), {
-      balance: 0, // assume logic in real wallet system deducts from here
+      balance: 0,
       paidTo: matchId,
       amount: userPrice
     });
