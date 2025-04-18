@@ -72,7 +72,11 @@ if (matchBtn) {
     const slices = document.getElementById('slice-count').value;
     const preference = document.getElementById('match-pref').value;
     const user = auth.currentUser;
-    if (!user) return alert("Please log in first");
+
+    if (!user) {
+      window.location.href = "login-extended.html";
+      return;
+    }
 
     await setDoc(doc(db, 'match_requests', user.uid), {
       userId: user.uid,
@@ -83,7 +87,6 @@ if (matchBtn) {
       deliveryOption: "waiting",
     });
 
-    // SMTP Email Trigger Backend Call (Simulated)
     await fetch("https://your-backend-url/send-email", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
