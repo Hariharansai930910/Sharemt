@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Payment Portal - SliceMate 💳</title>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, getDoc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const params = new URLSearchParams(window.location.search);
+    const requestId = params.get("requestId");
+
+    async function loadDetails() {
+      const requestRef = doc(db, "match_requests", requestId);
+      const reqSnap = await getDoc(requestRef);
+      if (!reqSnap.exists()) {
+        document.getElementById("info").textContent = "❌ Invalid request ID";
+        return;
+      }
+
+      const data = reqSnap.data();
+      const totalPrice = 20; // Placeholder
+      const totalSlices = 8;
+      const userA_slices = data.slices_wanted;
+      const userB_slices = totalSlices - userA_slices;
+      const userB_price = (totalPrice * userB_slices / totalSlices).toFixed(2);
+
+      const userB_email = localStorage.getItem("userEmail");
+      const userA_email = data.user_email;
+
+      const walletRefB = doc(db, "users_wallets", userB_email);
+      const walletRefA = doc(db, "users_wallets", userA_email);
+      const balSnapB = await getDoc(walletRefB);
+      const balSnapA = await getDoc(walletRefA);
+
+      const balanceB = balSnapB.exists() ? balSnapB.data().balance : 0;
+      const balanceA = balSnapA.exists() ? balSnapA.data().balance : 0;
+
+      document.getElementById("info").innerHTML = `
+        🍕 <strong>${data.food_name || 'Food'}</strong><br>
+        Your Share: <strong>${userB_slices}</strong> slices<br>
+        💵 Payable: <strong>$${userB_price}</strong><br><br>
+        <strong>Your Wallet Balance:</strong> $${balanceB.toFixed(2)}
+      `;
+
+      document.getElementById("payButton").onclick = async () => {
+        if (balanceB < userB_price) {
+          alert("❌ Not enough balance. Please use external wallet.");
+          return;
+        }
+
+        await updateDoc(walletRefB, { balance: balanceB - userB_price });
+        await updateDoc(walletRefA, { balance: balanceA + Number(userB_price) });
+
+        await updateDoc(requestRef, {
+          payment_status: "paid",
+          paid_by: userB_email,
+          amount_paid: Number(userB_price)
+        });
+
+        document.getElementById("info").innerHTML = "✅ Payment successful!";
+        document.getElementById("payButton").disabled = true;
+      };
+    }
+
+    window.onload = loadDetails;
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-white flex flex-col items-center justify-center min-h-screen text-center p-6">
+  <h1 class="text-2xl font-bold mb-4">💸 Split & Pay</h1>
+
+  <div id="info" class="text-lg text-gray-700 mb-6">Loading...</div>
+
+  <button id="payButton" class="bg-green-600 text-white px-6 py-2 rounded shadow mb-4">✅ Pay via SliceMate Wallet</button>
+
+  <hr class="w-full max-w-md mb-4 border-t">
+
+  <p class="mb-2 font-semibold">Or Pay Using:</p>
+  <div class="flex flex-col gap-2 items-center">
+    <a href="https://pay.google.com" class="bg-yellow-400 px-4 py-2 rounded shadow">🟡 Google Pay</a>
+    <a href="https://www.zellepay.com/" class="bg-purple-500 text-white px-4 py-2 rounded shadow">💜 Zelle</a>
+    <a href="https://paypal.me/" class="bg-blue-500 text-white px-4 py-2 rounded shadow">💙 PayPal</a>
+    <a href="#" class="bg-gray-800 text-white px-4 py-2 rounded shadow">🍏 Apple Pay (Requires iOS)</a>
+  </div>
+</body>
+</html>

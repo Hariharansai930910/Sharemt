@@ -1,0 +1,31 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>SliceMate 🍕</title>
+  <script type="module" src="firebase-config.js"></script>
+  <script type="module" src="app.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-yellow-100 flex flex-col items-center justify-center h-screen">
+
+  <h1 class="text-3xl font-bold mb-4">🍕 SliceMate</h1>
+  <p class="text-lg mb-6">Get only what you want. Split the rest!</p>
+
+  <label class="text-md font-semibold">How many pizza slices do you want?</label>
+  <input id="slice-count" type="number" min="1" max="8"
+         class="mt-2 border-2 rounded px-4 py-2 text-center w-24">
+
+  <label class="block mt-4 text-md font-medium">Matching Preference:</label>
+  <select id="match-pref" class="border border-gray-400 rounded px-4 py-2 mt-2">
+    <option value="auto">✅ Auto-Match Instantly</option>
+    <option value="manual">⏸ Ask Me Before Matching</option>
+  </select>
+
+  <button id="find-match-btn" class="mt-6 px-6 py-2 bg-green-600 text-white rounded shadow-lg">
+    Find Match
+  </button>
+
+</body>
+</html>

@@ -1,0 +1,117 @@
+/* === GLOBAL RESET === */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  background-color: #f9f9fb;
+  color: #333;
+  line-height: 1.6;
+  padding: 20px;
+}
+
+/* === HEADERS === */
+h1, h2, h3 {
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+/* === CONTAINER === */
+.container {
+  max-width: 500px;
+  margin: auto;
+  background: white;
+  padding: 2rem;
+  border-radius: 20px;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+}
+
+/* === INPUTS === */
+input, select {
+  width: 100%;
+  padding: 12px 15px;
+  margin: 10px 0;
+  border: 1px solid #ccc;
+  border-radius: 12px;
+  transition: 0.2s ease;
+}
+
+input:focus, select:focus {
+  border-color: #4CAF50;
+  outline: none;
+}
+
+/* === BUTTONS === */
+button, .btn {
+  width: 100%;
+  background-color: #4CAF50;
+  color: white;
+  padding: 12px;
+  margin-top: 15px;
+  border: none;
+  border-radius: 16px;
+  cursor: pointer;
+  font-size: 1rem;
+  transition: background 0.3s ease;
+}
+
+button:hover, .btn:hover {
+  background-color: #388e3c;
+}
+
+/* === FLEX ROWS === */
+.row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+/* === RADIO BUTTONS === */
+.radio-group {
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+
+.radio-group label {
+  flex: 1;
+  padding: 12px;
+  background: #eee;
+  border-radius: 12px;
+  text-align: center;
+  cursor: pointer;
+}
+
+input[type="radio"]:checked + label {
+  background: #4CAF50;
+  color: white;
+}
+
+/* === LOADER === */
+.loader {
+  border: 6px solid #f3f3f3;
+  border-top: 6px solid #4CAF50;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  animation: spin 1s linear infinite;
+  margin: 20px auto;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* === SUCCESS MESSAGE === */
+.success {
+  background-color: #d4edda;
+  color: #155724;
+  padding: 12px;
+  border-radius: 10px;
+  margin-top: 15px;
+  text-align: center;
+}

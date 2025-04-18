@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Login - SliceMate 🍕</title>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore-compat.js"></script>
+  <link type="text/css" rel="stylesheet" href="https://www.gstatic.com/firebasejs/ui/6.0.2/firebase-ui-auth.css" />
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="flex flex-col justify-center items-center h-screen bg-yellow-50">
+  <h1 class="text-3xl font-bold mb-6">🍕 SliceMate Login</h1>
+  <div id="firebaseui-auth-container"></div>
+
+  <script>
+ const firebaseConfig = {
+  apiKey: "AIzaSyD7Qozb-m-XTHx3tXWVGI5ObgLN6TwmSKc",
+  authDomain: "shrmte.firebaseapp.com",
+  projectId: "shrmte",
+  storageBucket: "shrmte.firebasestorage.app",
+  messagingSenderId: "660245185229",
+  appId: "1:660245185229:web:d9fa02e30892bad9fd5f84"
+};
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.firestore();
+    const auth = firebase.auth();
+
+    const ui = new firebaseui.auth.AuthUI(auth);
+ui.start('#firebaseui-auth-container', {
+  signInOptions: [firebase.auth.EmailAuthProvider.PROVIDER_ID],
+  signInFlow: "popup", // or 'redirect'
+  signInSuccessUrl: "index.html",
+  tosUrl: "#",
+  privacyPolicyUrl: "#",
+  callbacks: {
+    signInSuccessWithAuthResult: async function(authResult, redirectUrl) {
+      const user = authResult.user;
+      if (user) {
+        await db.collection("users_nearby").doc(user.uid).set({
+          email: user.email,
+          available_to_match: true,
+          last_seen: new Date().toISOString()
+        });
+        localStorage.setItem("userEmail", user.email);
+      }
+      return false;
+    }
+  }
+});
+  </script>
+</body>
+</html>

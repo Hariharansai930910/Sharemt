@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Waiting for Match - SliceMate 🍕</title>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    let timerInterval;
+    let pollInterval;
+    let selectedTime = 120000; // default to 2 min
+    let countdownValue = 120;
+
+    const requestId = localStorage.getItem("matchRequestId");
+
+    function startCountdown(durationMs) {
+      clearInterval(timerInterval);
+      countdownValue = durationMs / 1000;
+      document.getElementById("countdown").textContent = countdownValue;
+
+      timerInterval = setInterval(() => {
+        countdownValue--;
+        document.getElementById("countdown").textContent = countdownValue;
+        if (countdownValue <= 0) {
+          clearInterval(timerInterval);
+          stopPolling();
+          showResult(false);
+        }
+      }, 1000);
+    }
+
+    function showResult(matched) {
+      const message = matched
+        ? "🎉 Match found! Redirecting to payment..."
+        : "😔 No match found. You can pay and order solo.";
+
+      document.getElementById("status").textContent = message;
+
+      if (!matched) {
+        document.getElementById("payOption").style.display = "block";
+      }
+    }
+
+    function startPolling() {
+      pollInterval = setInterval(async () => {
+        const ref = doc(db, "match_requests", requestId);
+        const snap = await getDoc(ref);
+        if (snap.exists() && snap.data().status === "accepted") {
+          clearInterval(pollInterval);
+          clearInterval(timerInterval);
+          showResult(true);
+          setTimeout(() => {
+            window.location.href = "payment-respond.html?requestId=" + requestId;
+          }, 2000);
+        }
+      }, 3000);
+    }
+
+    function stopPolling() {
+      clearInterval(pollInterval);
+    }
+
+    window.setWaitTime = function (time) {
+      selectedTime = time;
+      startCountdown(time);
+      startPolling();
+      document.getElementById("startOptions").style.display = "none";
+      document.getElementById("waitTimer").style.display = "block";
+    }
+
+    window.onload = () => {
+      if (!requestId) {
+        document.getElementById("status").textContent = "❗ No match request found.";
+        return;
+      }
+    };
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-blue-50 flex flex-col items-center justify-center min-h-screen text-center p-4">
+  <h1 class="text-2xl font-bold mb-4">Waiting for Someone to Match...</h1>
+
+  <div id="startOptions" class="flex flex-col items-center gap-4">
+    <p class="mb-2">How long do you want to wait?</p>
+    <button onclick="setWaitTime(120000)" class="bg-yellow-400 px-6 py-2 rounded shadow">⏳ Wait 2 mins</button>
+    <button onclick="setWaitTime(300000)" class="bg-yellow-500 px-6 py-2 rounded shadow">⏱️ Wait 5 mins</button>
+    <button onclick="setWaitTime(3600000)" class="bg-yellow-600 px-6 py-2 rounded shadow">🕒 Wait Long (1 hour)</button>
+  </div>
+
+  <div id="waitTimer" style="display:none;">
+    <p class="text-lg mt-6">⏳ Countdown: <span id="countdown">...</span> seconds</p>
+  </div>
+
+  <p id="status" class="text-md text-gray-700 mt-6"></p>
+
+  <div id="payOption" class="mt-4" style="display:none;">
+    <button onclick="window.location.href='payment-respond.html?requestId=' + localStorage.getItem('matchRequestId');"
+            class="bg-green-600 text-white px-6 py-2 rounded shadow">
+      Pay and Eat Myself 🍽️
+    </button>
+  </div>
+</body>
+</html>

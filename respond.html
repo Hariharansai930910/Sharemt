@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Respond to Match | SliceMate 🍕</title>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-yellow-50 flex flex-col justify-center items-center h-screen text-center">
+  <h1 class="text-2xl font-bold mb-4">🍕 Match Request</h1>
+  <p class="mb-6">Someone near you wants to split a pizza.<br>Would you like to join?</p>
+
+  <div class="flex gap-6">
+    <button onclick="respond('accepted')" class="px-6 py-2 bg-green-600 text-white rounded shadow">✅ Accept</button>
+    <button onclick="respond('rejected')" class="px-6 py-2 bg-red-600 text-white rounded shadow">❌ Reject</button>
+  </div>
+
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, updateDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    // Extract requestId from URL
+    const urlParams = new URLSearchParams(window.location.search);
+    const requestId = urlParams.get('requestId');
+
+    async function respond(status) {
+      if (!requestId) {
+        alert("No match ID provided.");
+        return;
+      }
+
+      const matchRef = doc(db, "match_requests", requestId);
+      await updateDoc(matchRef, {
+        status: status
+      });
+
+      alert("Response recorded: " + status);
+      window.location.href = "index.html";
+    }
+  </script>
+</body>
+</html>

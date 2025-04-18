@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Order Confirmed - SliceMate 🍕</title>
+  <script type="module">
+    import { db } from './firebase-config.js';
+    import { doc, getDoc } from "https://www.gstatic.com/firebasejs/9.22.2/firebase-firestore.js";
+
+    const requestId = localStorage.getItem("matchRequestId");
+
+    async function loadOrderSummary() {
+      if (!requestId) {
+        document.getElementById("summary").textContent = "❌ Match request not found.";
+        return;
+      }
+
+      const ref = doc(db, "match_requests", requestId);
+      const snap = await getDoc(ref);
+
+      if (!snap.exists()) {
+        document.getElementById("summary").textContent = "❌ Order not found.";
+        return;
+      }
+
+      const data = snap.data();
+
+      if (data.payment_status !== "paid") {
+        document.getElementById("summary").innerHTML = "⏳ Waiting for payment to complete...";
+        return;
+      }
+
+      const totalSlices = 8;
+      const userA_slices = data.slices_wanted;
+      const userB_slices = totalSlices - userA_slices;
+      const totalPrice = 20;
+      const userA_price = (totalPrice * userA_slices / totalSlices).toFixed(2);
+      const userB_price = (totalPrice * userB_slices / totalSlices).toFixed(2);
+
+      document.getElementById("summary").innerHTML = `
+        <h2 class="text-xl font-semibold mb-2">🍕 Order Summary</h2>
+        <p><strong>Food:</strong> ${data.food_name || 'Pizza'}</p>
+        <p><strong>User A (${data.user_email})</strong>: ${userA_slices} slices → $${userA_price}</p>
+        <p><strong>User B (${data.response_by})</strong>: ${userB_slices} slices → $${userB_price}</p>
+        <p><strong>Total:</strong> $${totalPrice}</p>
+        <hr class="my-4">
+        <p><strong>Meeting Method:</strong> ${data.delivery_preference === "deliver" ? "Deliver to User A’s Place" : "At the Restaurant"}</p>
+        <p><strong>Location:</strong> ${data.delivery_address || "At Restaurant"}</p>
+        <p class="mt-4 text-green-600 font-bold">🎉 Meet up and enjoy your meal together!</p>
+      `;
+    }
+
+    window.onload = loadOrderSummary;
+  </script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-green-50 flex flex-col items-center justify-center h-screen p-4 text-center">
+  <h1 class="text-2xl font-bold mb-6">Final Order Details</h1>
+  <div id="summary" class="text-lg text-gray-800">Loading...</div>
+</body>
+</html>
